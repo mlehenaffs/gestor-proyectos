@@ -1,0 +1,47 @@
+.usuarios-container {
+  padding: 40px;
+  font-family: Arial, sans-serif;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.titulo {
+  color: #803813;
+  margin-bottom: 20px;
+}
+
+.tarjeta {
+  background: #fff2eb;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tarjeta input {
+  padding: 8px;
+  margin: 8px 0;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.boton {
+  background: #803813;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.lista-usuarios {
+  list-style: none;
+  padding: 0;
+  margin-top: 30px;
+}
+
+.lista-usuarios li {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
