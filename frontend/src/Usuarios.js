@@ -98,7 +98,7 @@ function Usuarios() {
           ))}
         </ul>
 
-        <Link to="/"><button>Volver al inicio</button></Link>
+        <Link to="/"><button>Volver al login</button></Link>
       </div>
     </>
   );
