@@ -58,7 +58,7 @@ app.post('/api/proyectos/:id/tareas', async (req, res) => {
   }
 });
 
-// Actualizar una tarea específica
+// Actualizar una tarea específica (versión corregida)
 app.put('/api/proyectos/:id/tareas/:tareaId', async (req, res) => {
   try {
     const proyecto = await Proyecto.findById(req.params.id);
@@ -69,8 +69,17 @@ app.put('/api/proyectos/:id/tareas/:tareaId', async (req, res) => {
 
     tarea.set(req.body);
     await proyecto.save();
-    console.log(`Tarea actualizada en proyecto ${proyecto.nombre}:`, tarea);
-    res.json({ mensaje: "Tarea actualizada", tarea });
+
+    const tareaActualizada = proyecto.tareas.id(req.params.tareaId);
+
+    res.json({
+      mensaje: "Tarea actualizada",
+      tarea: {
+        _id: tareaActualizada._id,
+        titulo: tareaActualizada.titulo || req.body.titulo || null,
+        descripcion: tareaActualizada.descripcion || req.body.descripcion || null
+      }
+    });
   } catch (err) {
     console.error("❌ Error al actualizar tarea:", err);
     res.status(500).json({ mensaje: "Error al actualizar tarea", error: err });
