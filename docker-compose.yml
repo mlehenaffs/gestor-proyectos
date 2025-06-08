@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - red-gestor
+    volumes:
+      - mongo_data:/data/db  
+
+  usuarios:
+    build: ./backend/microservicio-usuarios
+    ports:
+      - "4000:4000"
+    networks:
+      - red-gestor
+    restart: always
+    depends_on:
+      - mongodb
+
+  proyectos:
+    build: ./backend/microservicio-proyectos
+    ports:
+      - "4001:4001"
+    networks:
+      - red-gestor
+    restart: always
+    depends_on:
+      - usuarios
+      - mongodb
+
+  notificaciones:
+    build: ./backend/microservicio-notificaciones
+    ports:
+      - "4002:4002"
+    networks:
+      - red-gestor
+    restart: always
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - red-gestor
+    restart: always
+    depends_on:
+      - proyectos
+      - usuarios
+      - notificaciones
+
+networks:
+  red-gestor:
+    driver: bridge
+
+volumes:
+  mongo_data:  
