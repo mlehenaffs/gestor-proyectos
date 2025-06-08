@@ -1,7 +1,10 @@
+// src/Usuarios.js
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import { API_USUARIOS } from './config';
 import './App.css';
 
 function Usuarios() {
@@ -15,7 +18,7 @@ function Usuarios() {
   }, []);
 
   const obtenerUsuarios = () => {
-    axios.get('http://localhost:3001/api/usuarios')
+    axios.get(`${API_USUARIOS}/usuarios`)
       .then(res => setUsuarios(res.data))
       .catch(err => console.error('❌ Error al obtener usuarios:', err));
   };
@@ -39,7 +42,7 @@ function Usuarios() {
   const registrarUsuario = () => {
     if (!validarCampos()) return;
 
-    axios.post('http://localhost:3001/api/usuarios', { nombre, password })
+    axios.post(`${API_USUARIOS}/usuarios`, { nombre, password })
       .then(res => {
         setMensaje("✅ Usuario registrado correctamente");
         setUsuarios([...usuarios, res.data.usuario]);
@@ -54,7 +57,7 @@ function Usuarios() {
 
   const eliminarUsuario = (id) => {
     if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
-      axios.delete(`http://localhost:3001/api/usuarios/${id}`)
+      axios.delete(`${API_USUARIOS}/usuarios/${id}`)
         .then(() => {
           setUsuarios(usuarios.filter(u => u._id !== id));
           setMensaje("🗑️ Usuario eliminado correctamente");

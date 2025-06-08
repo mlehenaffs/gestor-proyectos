@@ -23,7 +23,7 @@ describe('Pruebas de API - Proyectos', () => {
 
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
-    console.log('📋 Total proyectos encontrados:', res.body.length);
+    console.log('Total proyectos encontrados:', res.body.length);
   });
 
   test('Actualizar registro (PUT /api/proyectos/:id/tareas/:tareaId)', async () => {

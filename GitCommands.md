@@ -4,7 +4,7 @@
 
 - Rama principal: main
 - Rama de integración: dev
-- Ramas de funcionalidad: feature/test, feature/usuarios, etc.
+- Ramas de funcionalidad: feature/test, feature/usuarios, feature/roles, feature/dashboard.
 
 ## Comandos utilizados
 

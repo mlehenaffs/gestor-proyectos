@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
+import { API_USUARIOS } from './config';
 
 function Login() {
   const [nombre, setNombre] = useState('');
@@ -10,10 +11,9 @@ function Login() {
   const navigate = useNavigate();
 
   const iniciarSesion = () => {
-    axios.post('http://localhost:3001/api/login', { nombre, password })
+    axios.post(`${API_USUARIOS}/login`, { nombre, password })
       .then(res => {
         setMensaje("✅ Bienvenido/a, " + res.data.usuario.nombre);
-        // Guardar usuario en localStorage
         localStorage.setItem('usuario', JSON.stringify(res.data.usuario));
         setTimeout(() => navigate('/proyectos'), 1500);
       })

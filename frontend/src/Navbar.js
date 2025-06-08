@@ -1,3 +1,5 @@
+// src/Navbar.js
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './App.css';
@@ -11,6 +13,7 @@ function Navbar() {
     navigate('/');
   };
 
+  // Si no hay usuario en sesión, no se muestra la barra
   if (!usuario) return null;
 
   return (
@@ -20,7 +23,7 @@ function Navbar() {
         <Link to="/usuarios">Usuarios</Link>
       </div>
       <div className="navbar-user">
-        <span>Hola, {usuario.nombre }</span>
+        <span>Hola, {usuario.nombre}</span>
         <button onClick={cerrarSesion}>Cerrar sesión</button>
       </div>
     </div>
@@ -28,4 +31,3 @@ function Navbar() {
 }
 
 export default Navbar;
-

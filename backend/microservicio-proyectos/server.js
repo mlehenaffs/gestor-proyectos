@@ -1,19 +1,36 @@
+// microservicio-proyectos/server.js
+
 const express = require('express');
-const cors = require('cors');
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const cors = require('cors');
+const http = require('http');
+const { io: ClientIO } = require('socket.io-client'); // Cliente WebSocket para emitir notificaciones
 
 const app = express();
+const server = http.createServer(app);
+
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect('mongodb://localhost:27017/gestor_proyectos')
-  .then(() => console.log('✅ Conectado a MongoDB'))
-  .catch(err => console.error('❌ Error al conectar a MongoDB', err));
+// 👉 Cliente WebSocket conectado al microservicio-notificaciones
+const notificacionSocket = ClientIO('http://notificaciones:4002'); // AJUSTE: nombre del servicio en docker-compose
 
+notificacionSocket.on('connect', () => {
+  console.log('📡 Proyectos conectado a microservicio-notificaciones');
+});
+
+// Hacer accesible desde rutas
+app.set('socketNotificaciones', notificacionSocket);
+
+// Conexión a MongoDB
+mongoose.connect('mongodb://mongodb:27017/gestor_proyectos')
+  .then(() => console.log('✅ Proyectos - Conectado a MongoDB'))
+  .catch(err => console.error('❌ Proyectos - Error al conectar a MongoDB', err));
+
+// Modelo
 const Proyecto = require('./models/Proyecto');
-const Usuario = require('./models/Usuario');
 
+// Rutas
 app.get('/api/proyectos', async (req, res) => {
   try {
     const proyectos = await Proyecto.find();
@@ -30,6 +47,13 @@ app.post('/api/proyectos', async (req, res) => {
       tareas: []
     });
     await nuevoProyecto.save();
+
+    // Emitir notificación
+    notificacionSocket.emit('notificacion', {
+      tipo: 'nuevo_proyecto',
+      mensaje: `Se ha creado el proyecto "${nuevoProyecto.nombre}".`
+    });
+
     res.json({ mensaje: "Proyecto creado", proyecto: nuevoProyecto });
   } catch (err) {
     res.status(500).json({ mensaje: "Error al crear proyecto", error: err });
@@ -46,6 +70,13 @@ app.post('/api/proyectos/:id/tareas', async (req, res) => {
     await proyecto.save();
 
     const tareaAgregada = proyecto.tareas[proyecto.tareas.length - 1];
+
+    // Emitir notificación
+    notificacionSocket.emit('notificacion', {
+      tipo: 'nueva_tarea',
+      mensaje: `Nueva tarea "${tareaAgregada.nombre}" añadida al proyecto "${proyecto.nombre}".`
+    });
+
     res.json({ mensaje: "Tarea agregada", tarea: tareaAgregada });
   } catch (err) {
     res.status(500).json({ mensaje: "Error al agregar tarea", error: err });
@@ -79,54 +110,22 @@ app.put('/api/proyectos/:id/tareas/:tareaId', async (req, res) => {
   }
 });
 
-app.get('/api/usuarios', async (req, res) => {
-  try {
-    const usuarios = await Usuario.find();
-    res.json(usuarios);
-  } catch (err) {
-    res.status(500).json({ mensaje: "Error al obtener usuarios", error: err });
-  }
-});
+// 🔹 Ruta temporal para probar notificaciones manuales
+app.post('/api/test-notificacion', (req, res) => {
+  const socketNotificaciones = req.app.get('socketNotificaciones');
 
-app.post('/api/usuarios', async (req, res) => {
-  try {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    const nuevoUsuario = new Usuario({
-      nombre: req.body.nombre,
-      password: hashedPassword
+  if (socketNotificaciones && socketNotificaciones.connected) {
+    socketNotificaciones.emit('notificacion', {
+      mensaje: '🔔 Notificación de prueba desde /api/test-notificacion'
     });
-    await nuevoUsuario.save();
-    res.json({ mensaje: "Usuario creado", usuario: { nombre: nuevoUsuario.nombre, _id: nuevoUsuario._id } });
-  } catch (err) {
-    res.status(500).json({ mensaje: "Error al crear usuario", error: err });
+    res.json({ ok: true, mensaje: 'Notificación emitida' });
+  } else {
+    res.status(500).json({ ok: false, error: 'Socket no conectado' });
   }
 });
 
-app.delete('/api/usuarios/:id', async (req, res) => {
-  try {
-    await Usuario.findByIdAndDelete(req.params.id);
-    res.json({ mensaje: "Usuario eliminado" });
-  } catch (err) {
-    res.status(500).json({ mensaje: "Error al eliminar usuario", error: err });
-  }
-});
-
-app.post('/api/login', async (req, res) => {
-  const { nombre, password } = req.body;
-  try {
-    const usuario = await Usuario.findOne({ nombre });
-    if (!usuario) return res.status(400).json({ mensaje: "Usuario no encontrado" });
-
-    const isMatch = await bcrypt.compare(password, usuario.password);
-    if (!isMatch) return res.status(401).json({ mensaje: "Contraseña incorrecta" });
-
-    res.json({ mensaje: "Login exitoso", usuario: { nombre: usuario.nombre, _id: usuario._id } });
-  } catch (err) {
-    res.status(500).json({ mensaje: "Error al verificar login", error: err });
-  }
-});
-
-const PORT = 3001;
-app.listen(PORT, () => {
-  console.log(`Servidor funcionando en http://localhost:${PORT}`);
+// Iniciar servidor
+const PORT = 4001;
+server.listen(PORT, () => {
+  console.log(`🟢 Microservicio Proyectos corriendo en http://localhost:${PORT}`);
 });
